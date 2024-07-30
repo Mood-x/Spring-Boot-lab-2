@@ -162,23 +162,25 @@ public class EmployeeController {
     }
 
 
-    @PutMapping("/promote/{empId}")
-    public ResponseEntity promoteEmployee(@PathVariable String empId, @RequestBody String superId){
+    @PutMapping("/promote/{superId}/{empId}")
+    public ResponseEntity promoteEmployee(@PathVariable String superId, @PathVariable String empId){
 
+        if(employees.isEmpty()){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Employees list empty"); 
+        }
+        
         for(Employee s : employees){
-            if(superId.equalsIgnoreCase(s.getId()) && s.getPosition().equalsIgnoreCase("supervisor")){
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Access denid!"); 
+            if(s.getId().equals(superId) && s.getPosition().equals("supervisor")){
+                for(Employee e : employees){
+                    if(e.getId().equals(empId) && e.getAge() >= 30 && e.isOnLeave() == false && e.getPosition().equals("coordinator")){
+                        e.setPosition("supervisor");
+                        return ResponseEntity.status(HttpStatus.OK).body("Promote this employee (" + e.getName()+")to supervisor"); 
+                    }
+                }
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Your age less than 30 or you are on leave now ");
             }
         }
-
-        for(Employee e : employees){
-            if(empId.equalsIgnoreCase(e.getId()) && e.isOnLeave() == false && e.getAge() >= 30){
-                e.setPosition("supervisor");
-            }else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("h"); 
-            }
-        }
-        return ResponseEntity.status(HttpStatus.OK).body("Promote this employee to supervisor"); 
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Access denied"); 
     }
 
 
